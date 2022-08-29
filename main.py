@@ -95,9 +95,9 @@ def FluxEval(uLL, uL, uR, uRR, a, dt, dx, methodType):
         phi = (theta + np.abs(theta)) / (1 + np.abs(theta))
 
     if (methodType == 3):
-        delta = phi * delU2
-    else:
         delta = 0.5 * (delU2 + delU1)
+    else:
+        delta = phi * delU2
     
     Flux = (am * uR) + (ap *uL) + (0.5 * amod * (1 - Ca) * delta)
     return Flux
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     Flux = np.zeros(N + (2*ngc) + 1)
 
     # Get type of initial condition from the user
-    ICtype = int(input("What type of IC? [1:square; 2:sine, 3:single shock = "))
+    ICtype = int(input("What type of IC? [1:square; 2:sine, 3:single shock] = "))
 
     # Initialize initial condititions based on user input
     if (ICtype == 1):
@@ -159,9 +159,9 @@ if __name__ == "__main__":
         #Initialize single shock square wave initial condition
         for i in range(ibeg, (iend + 1)):
             travelDist = 0.3
-            if ((x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa)))):
+            if ((x[i] > xa) and (x[i] <= ((0.5) * (xb - xa)))):
                 u[i] = 1
-            elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
+            elif (x[i] > ((0.5) * (xb - xa))):
                 u[i] = -1
     else:
         print("That is not a valid input")
@@ -174,16 +174,15 @@ if __name__ == "__main__":
     #quick_plot(x, u, xlims, ylims)
 
     # Finish setting up initial conditions
-#    if (ICtype == 3):
-#       travelDist = 0.3
-#        for i in range(ibeg, (iend + 1)):
-#            if ((x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa)))):
-#                    uInit[i] = 1
-#            elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
-#                uInit[i] = -1
-#    else:
-#        uInit = u.copy()
-    uInit = u.copy()
+    if (ICtype == 3):
+        travelDist = 0.3
+        for i in range(ibeg, (iend + 1)):
+            if ((x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa)))):
+                    uInit[i] = 1
+            elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
+                uInit[i] = -1
+    else:
+        uInit = u.copy()
 
     # Debug plot
     # quick_plot(x, uInit, xlims, ylims)
