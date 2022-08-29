@@ -93,6 +93,9 @@ def FluxEval(uLL, uL, uR, uRR, a, dt, dx, methodType):
     elif (methodType == 8):
         # vanLeer
         phi = (theta + np.abs(theta)) / (1 + np.abs(theta))
+    elif (methodType == 9):
+        # LF placeholder
+        phi = 0
 
     if (methodType == 3):
         delta = 0.5 * (delU2 + delU1)
@@ -220,23 +223,30 @@ if __name__ == "__main__":
 
     print("[1]Upwind, [2]LW, [3]Fromm, [4]BW")
     print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
-    methodType = int(input("Method type [1-8] = "))
+    print("[9]LF")
+    methodType = int(input("Method type [1-9] = "))
 
     while t < tmax:
 
-        # Calculate fluxes
-        for i in range(ibeg, (iend + 2)):
-            Flux[i] = FluxEval(u[i-2], u[i-1], u[i], u[i+1], a, dt, dx, methodType)
+        # Calculate flux
+        #for i in range(ibeg, (iend + 2)):
+            #Flux[i] = FluxEval(u[i-2], u[i-1], u[i], u[i+1], a, dt, dx, methodType)
 
         # Calculate uNew
         for i in range(ibeg, (iend + 1)):
-            uNew[i] = u[i] - ((dt/dx) * (Flux[i + 1] - Flux[i]))
+            if (methodType == 1):
+                uNew[i] = u[i] - ((dt/dx) * (Flux[i + 1] - Flux[i]))
+            elif (methodType == 2):
+                uNew[i] = u[i] - (a/2)*(dt/dx)*(u[i + 1] - u[i - 1]) + (1/2)*(a*dt/dx)**2*(u[i + 1] - 2*u[i] + u[i - 1])
+            elif (methodType == 9):
+                uNew[i] = 0.5 * (u[i + 1] + u[i - 1]) - ((a/2) * (dt/dx) * (u[i + 1] - u[i - 1])) 
+                
 
         # Apply Boundary Conditions in place
         applyBC(uNew, ibeg, iend, ngc, BCtype)
 
         # Set new to old
-        u = uNew
+        u = uNew.copy()
 
         # Increment time
         t += dt
