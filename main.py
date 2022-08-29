@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
     # Some values for plotting
     xlims = ((xa - 0.25), (xb + 0.25))
-    ylims = (np.min(u) * 1.2, np.max(u) * 1.2)
+    ylims = (np.min(u) * 1.5, np.max(u) * 1.5)
 
     # Debug plot
     #quick_plot(x, u, xlims, ylims)
@@ -235,12 +235,20 @@ if __name__ == "__main__":
         # Calculate uNew
         for i in range(ibeg, (iend + 1)):
             if (methodType == 1):
+                # Upwind
                 uNew[i] = u[i] - ((dt/dx) * (Flux[i + 1] - Flux[i]))
             elif (methodType == 2):
+                # LW
                 uNew[i] = u[i] - (a/2)*(dt/dx)*(u[i + 1] - u[i - 1]) + (1/2)*(a*dt/dx)**2*(u[i + 1] - 2*u[i] + u[i - 1])
             elif (methodType == 9):
+                # LF
                 uNew[i] = 0.5 * (u[i + 1] + u[i - 1]) - ((a/2) * (dt/dx) * (u[i + 1] - u[i - 1])) 
-                
+            elif (methodType == 4):
+                # BW
+                uNew[i] = u[i] - (a/2)*(dt/dx)*(3*u[i] - 4*u[i-1] + u[i-2]) + (1/2)*(a*dt/dx)**2*(u[i] - 2*u[i-1] + u[i-2])
+            elif (methodType == 3):
+                # Fromm
+                uNew[i] = u[i] - a * (dt/dx)*(u[i] - u[i - 1]) - (a/4)*(dt/dx)*(1 - a*(dt/dx))*(u[i+1] - u[i]) + (a/4)*(dt/dx)*(1 - a*(dt/dx))*(u[i-1] - u[i-2])
 
         # Apply Boundary Conditions in place
         applyBC(uNew, ibeg, iend, ngc, BCtype)
