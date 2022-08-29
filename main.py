@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Produces a line plot
 def quick_plot(x, y, xlims, ylims, title = "placeholder", show=True, save=False):
     fig, ax = plt.subplots(figsize = (12, 6))
 
@@ -13,11 +14,14 @@ def quick_plot(x, y, xlims, ylims, title = "placeholder", show=True, save=False)
             markeredgecolor="lime", markeredgewidth=1,)
 
 
+    ax.plot(x,uInit, color = "red")
+
     if (save):
         fig.save(f"{title}.png")
     if (show):
         plt.show()
 
+# Applies boundary conditions to a function
 def applyBC(u, ibeg, iend, ngc, BCtype):
     if (BCtype == 1):
         # Periodic boundary conditions
@@ -29,6 +33,74 @@ def applyBC(u, ibeg, iend, ngc, BCtype):
         # Outflow bounddary conditions
         u[1:ngc] = u[ibeg]
         u[(iend + 1):(iend + ngc)] = u[iend]
+
+# Not entirely sure what this does yet
+def minmod(a, b):
+    if ((a*b) > 0):
+        if (np.abs(a) < np.abs(b)):
+            c = a
+        else:
+            c = b
+    else:
+        c = 0
+    return c
+
+# Evaluates the flux for a given u and method type
+def FluxEval(uLL, uL, uR, uRR, a, dt, dx, methodType):
+
+    # Set some constants
+    epsilon = 1.e-16
+    ap = max(a, 0)
+    am = min(a, 0)
+    aAbs = ap - am
+    amod = np.abs(a)
+    Ca = amod * (dt/dx)
+
+    if (a > 0):
+        delU1 = uL - uLL
+    else:
+        delU1 = uRR - uR
+
+    if (methodType <= 3):
+        delU2 = uR - uL
+        theta = 0
+    elif (methodType > 3):
+        delU2 = max(uR - uL, epsilon)
+        theta = delU1/delU2
+
+    # The different methods
+    if (methodType == 1):
+        # Upwind
+        phi = 0
+    elif (methodType == 2):
+        # LW
+        phi = 1
+    elif (methodType == 3):
+        # Fromm
+        phi = 0.5 * (1.0 + theta)
+    elif (methodType == 4):
+        # BW
+        phi = theta
+    elif (methodType == 5):
+        # minmod
+        phi = minmod(1, theta)
+    elif (methodType == 6):
+        # superbee
+        phi = max(0, max(min(1,2 * theta), min(2, theta)))
+    elif (methodType == 7):
+        # MC
+        phi = max(0, min(min(0.5 * (1 + theta),2), 2 * theta))
+    elif (methodType == 8):
+        # vanLeer
+        phi = (theta + np.abs(theta)) / (1 + np.abs(theta))
+
+    if (methodType == 3):
+        delta = phi * delU2
+    else:
+        delta = 0.5 * (delU2 + delU1)
+    
+    Flux = (am * uR) + (ap *uL) + (0.5 * amod * (1 - Ca) * delta)
+    return Flux
 
 if __name__ == "__main__":
 
@@ -86,9 +158,10 @@ if __name__ == "__main__":
     elif (ICtype == 3):
         #Initialize single shock square wave initial condition
         for i in range(ibeg, (iend + 1)):
-            if ((x[i] > xa and x[i] <= (0.5 * (xb - xa)))):
+            travelDist = 0.3
+            if ((x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa)))):
                 u[i] = 1
-            elif (x[i] > 0.5 * (xb - xa)):
+            elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
                 u[i] = -1
     else:
         print("That is not a valid input")
@@ -98,19 +171,19 @@ if __name__ == "__main__":
     ylims = (np.min(u) * 1.2, np.max(u) * 1.2)
 
     # Debug plot
-    quick_plot(x, u, xlims, ylims)
+    #quick_plot(x, u, xlims, ylims)
 
     # Finish setting up initial conditions
-    if (ICtype == 3):
-        travelDist = 0.3
-        for i in range(ibeg, (iend + 1)):
-            if ((x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa)))):
-                    uInit[i] = 1
-            elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
-                uInit[i] = -1
-    else:
-        uInit = u
-
+#    if (ICtype == 3):
+#       travelDist = 0.3
+#        for i in range(ibeg, (iend + 1)):
+#            if ((x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa)))):
+#                    uInit[i] = 1
+#            elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
+#                uInit[i] = -1
+#    else:
+#        uInit = u.copy()
+    uInit = u.copy()
 
     # Debug plot
     # quick_plot(x, uInit, xlims, ylims)
@@ -122,7 +195,66 @@ if __name__ == "__main__":
     # Apply boundary conditions in place
     applyBC(u, ibeg, iend, ngc, BCtype)
 
-    print(x)
+    # Initialize two variables to hold U^{n + 1} and U^{n}
+    uNew = u.copy()
+    uOld = u.copy()
 
-    # Final plot
+    # Get advection velocity and cfl from the user
+    a = float(input("Advection velocity a = "))
+    cfl = float(input("CFL = "))
+
+    # Calculate dt
+    dt = cfl * (dx/np.abs(a))
+
+    # Choose number of cycles
+    Ncycle = 1
+
+    # Set initial t value and find a tmax
+    t = 0
+    if (ICtype == 3):
+        tmax = travelDist/a
+    else:
+        tmax = Ncycle * ((xb - xa)/np.abs(a))
+
+    # Initial conditions plot
     quick_plot(x, u, xlims, ylims)
+
+    print("[1]Upwind, [2]LW, [3]Fromm, [4]BW")
+    print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
+    methodType = int(input("Method type [1-8] = "))
+
+    while t < tmax:
+
+        # Calculate fluxes
+        for i in range(ibeg, (iend + 2)):
+            Flux[i] = FluxEval(u[i-2], u[i-1], u[i], u[i+1], a, dt, dx, methodType)
+
+        # Calculate uNew
+        for i in range(ibeg, (iend + 1)):
+            uNew[i] = u[i] - ((dt/dx) * (Flux[i + 1] - Flux[i]))
+
+        # Apply Boundary Conditions in place
+        applyBC(uNew, ibeg, iend, ngc, BCtype)
+
+        # Set new to old
+        u = uNew
+
+        # Increment time
+        t += dt
+
+        quick_plot(x, u, xlims, ylims)
+
+    fig, ax = plt.subplots(figsize = (12, 6))
+
+    ax.set_xlim(xlims)
+    ax.set_ylim(ylims)
+    ax.grid(alpha=0.33)
+    ax.set_title("placeholder")
+
+    ax.plot(x, u, color ='slateblue',marker='o', ms = 5, markerfacecolor = "None",
+            markeredgecolor="lime", markeredgewidth=1,)
+
+    ax.plot(x,uInit, color = "red")
+
+    plt.show()
+
