@@ -67,51 +67,38 @@ def evaluate(u, a, dt, dx, tmax, ibeg, iend, ngc, N, methodType, BCtype):
         t += dt
 
 
-def double_plot(x, y1, y2, reference1, reference2):
-    fig, axs = plt.subplots(2, 1)
+def singlePlot(x, y, reference, title="placehodler", save=False):
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
-    axs[0].plot(
+    ax.set_title(title)
+
+    ax.plot(
         x,
-        y1,
+        y,
         linewidth=1,
         color="slateblue",
         marker="o",
-        ms=5,
+        ms=2,
         markerfacecolor="None",
         markeredgecolor="red",
         markeredgewidth=1,
     )
 
-    axs[0].plot(x, reference1, color="black")
+    ax.plot(x, reference, color="black")
 
-    axs[1].plot(
-        x,
-        y2,
-        linewidth=1,
-        color="slateblue",
-        marker="o",
-        ms=3,
-        markerfacecolor="None",
-        markeredgecolor="red",
-        markeredgewidth=1,
-    )
-
-    axs[1].plot(x, reference2, color="black")
-
+    if save:
+        fig.savefig(f"./plots/{title}.png", dpi=200)
     plt.show()
 
 
-def runAndPlot(
+def runAndSinglePlot(
     x,
-    u1,
-    u2,
-    reference1,
-    reference2,
+    u,
+    reference,
     a,
     dt,
     dx,
-    tmax1,
-    tmax2,
+    tmax,
     ibeg,
     iend,
     ngc,
@@ -119,6 +106,6 @@ def runAndPlot(
     methodType,
     BCtype,
 ):
-    evaluate(u1, a, dt, dx, tmax1, ibeg, iend, ngc, N, methodType, BCtype)
-    evaluate(u2, a, dt, dx, tmax2, ibeg, iend, ngc, N, methodType, BCtype)
-    double_plot(x, u1, u2, reference1, reference2)
+    methods = ["Upwind", "LF", "LW", "BW", "Fromm"]
+    evaluate(u, a, dt, dx, tmax, ibeg, iend, ngc, N, methodType, BCtype)
+    singlePlot(x, u, reference, methods[methodType - 1], save=False)

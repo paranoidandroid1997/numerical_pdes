@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from applyIC import *
 from applyBC import *
 from FluxEval import *
-from runAndPlot import *
+from runAndDoublePlot import *
+from runAndSinglePlot import *
 
 if __name__ == "__main__":
 
@@ -92,6 +93,7 @@ if __name__ == "__main__":
         uInit2 = u2.copy()
 
     # Get advection velocity and cfl from the user
+
     a = 1  # float(input("Advection velocity a = "))
     cfl = 0.9  # float(input("CFL = "))
 
@@ -107,14 +109,11 @@ if __name__ == "__main__":
     else:
         tmax1 = Ncycle * ((xb - xa) / np.abs(a))
 
-        # Set tmax value
+    # Set tmax value
     if ICtype2 == 3:
         tmax2 = travelDist / a
     else:
         tmax2 = Ncycle * ((xb - xa) / np.abs(a))
-
-    # Initial conditions plot
-    # quick_plot(x, u, xlims, ylims)
 
     print("[1]Upwind, [2]LW, [3]Fromm, [4]BW")
     print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
@@ -122,7 +121,7 @@ if __name__ == "__main__":
 
     for i in range(1, 6):
         methodType = i  # int(input("Method type [1-9] = "))
-        runAndPlot(
+        runAndDoublePlot(
             x,
             u1.copy(),
             u2.copy(),
