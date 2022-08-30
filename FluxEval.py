@@ -1,3 +1,7 @@
+import numpy as np
+
+from minmod import *
+
 # Evaluates the flux for a given u and method type
 def FluxEval(uLL, uL, uR, uRR, a, dt, dx, methodType):
 

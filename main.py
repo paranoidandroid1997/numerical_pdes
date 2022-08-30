@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from applyIC import *
 from applyBC import *
-from minmod import *
 from FluxEval import *
 
 def quick_plot(x, y, xlims, ylims, title = "placeholder", show=True, save=False):
@@ -24,24 +24,10 @@ def quick_plot(x, y, xlims, ylims, title = "placeholder", show=True, save=False)
     if (show):
         plt.show()
 
-def double_plot(x, y1, y2,titles=("placeholder","placeholder"),
-                show=True, save=False):
-    fig, axs = plt.subplots(2, 1)
-
-    axs[0].set_xlim(xlims)
-    axs[0].set_ylim(ylims)
-    axs[0].grid(alpha=0.33)
-    axs[0].set_title(titles[0])
-
-    axs[0].set_xlim(xlims)
-    axs[0].set_ylim(ylims)
-    axs[0].grid(alpha=0.33)
-    axs[0].set_title(titles[1])
-
 if __name__ == "__main__":
 
     # Get number of steps in space from user
-    N = int(input("Grid resolution N = "))
+    N = 64 #int(input("Grid resolution N = "))
 
     # Set space bounds
     xa = 0
@@ -76,40 +62,20 @@ if __name__ == "__main__":
     # Get type of initial condition from the user
     ICtype = int(input("What type of IC? [1:square; 2:sine, 3:single shock] = "))
 
-    # Initialize initial condititions based on user input
-    if (ICtype == 1):
-        # Initialize square wave initial conditions
-        for i in range(ibeg, (iend + 1)):
-            if ((x[i] > xa) and (x[i] <= (0.25 * (xb - xa)))):
-                u[i] = 0
-            elif ((x[i] > (0.25 * (xb - xa))) and (x[i] <= (0.5 * (xb - xa)))):
-                u[i] = -1
-            elif ((x[i] > (0.5 * (xb - xa))) and (x[i] <= (0.75 * (xb - xa)))):
-                u[i] = 1
-            else:
-                u[i] = 0
-    elif (ICtype == 2):
-        # Initialize sin wave initial conditions
-        u[ibeg:(iend + 1)] = np.sin(2.0 * np.pi *x[ibeg:(iend + 1)])
-    elif (ICtype == 3):
-        #Initialize single shock square wave initial condition
-        for i in range(ibeg, (iend + 1)):
-            travelDist = 0.3
-            if ((x[i] > xa) and (x[i] <= ((0.5) * (xb - xa)))):
-                u[i] = 1
-            elif (x[i] > ((0.5) * (xb - xa))):
-                u[i] = -1
-    else:
-        print("That is not a valid input")
+    # Apply initial conditions in place
+    applyIC(u, x, xa, xb, ibeg, iend, ICtype)
 
     # Some values for plotting
     xlims = ((xa - 0.25), (xb + 0.25))
     ylims = (np.min(u) * 1.5, np.max(u) * 1.5)
 
-    # Debug plot
-    #quick_plot(x, u, xlims, ylims)
+    # Get type of boundary condition from the user
+    BCtype = 1 #int(input("BC type [1:periodic, 2:outflow] = ")) 
 
-    # Finish setting up initial conditions
+    # Apply boundary conditions in place
+    applyBC(u, ibeg, iend, ngc, BCtype)
+
+    # Setup a uInit for later plotting
     if (ICtype == 3):
         travelDist = 0.3
         for i in range(ibeg, (iend + 1)):
@@ -117,26 +83,17 @@ if __name__ == "__main__":
                     uInit[i] = 1
             elif (x[i] > ((0.5 + travelDist) * (xb - xa))):
                 uInit[i] = -1
+        applyBC(uInit, ibeg, iend, ngc, BCtype)
     else:
         uInit = u.copy()
-
-    # Debug plot
-    # quick_plot(x, uInit, xlims, ylims)
-
-
-    # Get type of boundary condition from the user
-    BCtype = int(input("BC type [1:periodic, 2:outflow] = ")) 
-
-    # Apply boundary conditions in place
-    applyBC(u, ibeg, iend, ngc, BCtype)
 
     # Initialize two variables to hold U^{n + 1} and U^{n}
     uNew = u.copy()
     uOld = u.copy()
 
     # Get advection velocity and cfl from the user
-    a = float(input("Advection velocity a = "))
-    cfl = float(input("CFL = "))
+    a = 1 #float(input("Advection velocity a = "))
+    cfl = 0.9#float(input("CFL = "))
 
     # Calculate dt
     dt = cfl * (dx/np.abs(a))
@@ -152,8 +109,7 @@ if __name__ == "__main__":
         tmax = Ncycle * ((xb - xa)/np.abs(a))
 
     # Initial conditions plot
-    #quick_plot(x, u, xlims, ylims)
-
+    quick_plot(x, u, xlims, ylims)
 
 
 

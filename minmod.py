@@ -1,3 +1,5 @@
+import numpy as np
+
 # Not entirely sure what this does yet
 def minmod(a, b):
     if ((a*b) > 0):
