@@ -115,10 +115,6 @@ if __name__ == "__main__":
     else:
         tmax2 = Ncycle * ((xb - xa) / np.abs(a))
 
-    print("[1]Upwind, [2]LW, [3]Fromm, [4]BW")
-    print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
-    print("[9]LF")
-
     for i in range(1, 6):
         methodType = i  # int(input("Method type [1-9] = "))
         runAndDoublePlot(
