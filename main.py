@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from applyIC import *
 from applyBC import *
 from FluxEval import *
+from runAndPlot import *
 
 
 def quick_plot(x, y, xlims, ylims, title="placeholder", show=True, save=False):
@@ -25,47 +26,10 @@ def quick_plot(x, y, xlims, ylims, title="placeholder", show=True, save=False):
         markeredgewidth=1,
     )
 
-    ax.plot(x, uInit, color="red")
-
     if save:
         fig.save(f"{title}.png")
     if show:
         plt.show()
-
-
-# Calculate u up to tmax given a method type
-def evaluate(u, a, dt, dx, tmax, methodType):
-    t = 0
-    while t < tmax:
-        if methodType == 1:
-            # Calculate flux
-            for i in range(ibeg, (iend + 2)):
-                Flux[i] = FluxEval(
-                    u[i - 2], u[i - 1], u[i], u[i + 1], a, dt, dx, methodType
-                )
-
-            for i in range(ibeg, (iend + 1)):
-                uNew[i] = u[i] - ((dt / dx) * (Flux[i + 1] - Flux[i]))
-
-        # Apply Boundary Conditions in place
-        applyBC(uNew, ibeg, iend, ngc, BCtype)
-
-        # Set new to old
-        u = uNew.copy()
-
-        quick_plot(x, u, xlims, ylims)
-
-        # Increment time
-        t += dt
-
-
-def double_plot():
-    pass
-
-
-def runAndPlot(u, a, dt, dx, tmax, methodType):
-    evaluate(u, a, dt, dx, tmax, methodType)
-    double_plot()
 
 
 if __name__ == "__main__":
@@ -96,44 +60,58 @@ if __name__ == "__main__":
         x[ibeg - 1 - i] = x[ibeg] - (i + 1) * dx
         x[i + N + ngc] = x[N + ngc - 1] + (i + 1) * dx
 
-    # Initialize u
-    u = np.zeros(N + (2 * ngc))
-    uInit = np.zeros(N + (2 * ngc))
-
-    # Initialize flux
-    Flux = np.zeros(N + (2 * ngc) + 1)
+    # Initialize u1 and u2
+    u1 = np.zeros(N + (2 * ngc))
+    u2 = np.zeros(N + (2 * ngc))
+    uInit1 = np.zeros(N + (2 * ngc))
+    uInit2 = np.zeros(N + (2 * ngc))
 
     # Get type of initial condition from the user
-    ICtype = int(input("What type of IC? [1:square; 2:sine, 3:single shock] = "))
+    ICtype1 = (
+        2  # int(input("What type of IC for u1? [1:square; 2:sine, 3:single shock] = "))
+    )
+    ICtype2 = (
+        3  # int(input("What type of IC for u2? [1:square; 2:sine, 3:single shock] = "))
+    )
 
     # Apply initial conditions in place
-    applyIC(u, x, xa, xb, ibeg, iend, ICtype)
+    applyIC(u1, x, xa, xb, ibeg, iend, ICtype1)
+    applyIC(u2, x, xa, xb, ibeg, iend, ICtype2)
 
     # Some values for plotting
     xlims = ((xa - 0.25), (xb + 0.25))
-    ylims = (np.min(u) * 1.5, np.max(u) * 1.5)
+    ylims = (np.min(u1) * 1.5, np.max(u2) * 1.5)
 
     # Get type of boundary condition from the user
     BCtype = 1  # int(input("BC type [1:periodic, 2:outflow] = "))
 
     # Apply boundary conditions in place
-    applyBC(u, ibeg, iend, ngc, BCtype)
+    applyBC(u1, ibeg, iend, ngc, BCtype)
+    applyBC(u2, ibeg, iend, ngc, BCtype)
 
     # Setup a uInit for later plotting
-    if ICtype == 3:
+    if ICtype1 == 3:
         travelDist = 0.3
         for i in range(ibeg, (iend + 1)):
             if (x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa))):
-                uInit[i] = 1
+                uInit1[i] = 1
             elif x[i] > ((0.5 + travelDist) * (xb - xa)):
-                uInit[i] = -1
-        applyBC(uInit, ibeg, iend, ngc, BCtype)
+                uInit1[i] = -1
+        applyBC(uInit1, ibeg, iend, ngc, BCtype)
     else:
-        uInit = u.copy()
+        uInit1 = u1.copy()
 
-    # Initialize two variables to hold U^{n + 1} and U^{n}
-    uNew = u.copy()
-    uOld = u.copy()
+    # Setup a uInit for later plotting
+    if ICtype2 == 3:
+        travelDist = 0.3
+        for i in range(ibeg, (iend + 1)):
+            if (x[i] > xa) and (x[i] <= ((0.5 + travelDist) * (xb - xa))):
+                uInit2[i] = 1
+            elif x[i] > ((0.5 + travelDist) * (xb - xa)):
+                uInit2[i] = -1
+        applyBC(uInit2, ibeg, iend, ngc, BCtype)
+    else:
+        uInit2 = u2.copy()
 
     # Get advection velocity and cfl from the user
     a = 1  # float(input("Advection velocity a = "))
@@ -146,20 +124,28 @@ if __name__ == "__main__":
     Ncycle = 1
 
     # Set tmax value
-    if ICtype == 3:
-        tmax = travelDist / a
+    if ICtype1 == 3:
+        tmax1 = travelDist / a
     else:
-        tmax = Ncycle * ((xb - xa) / np.abs(a))
+        tmax1 = Ncycle * ((xb - xa) / np.abs(a))
+
+        # Set tmax value
+    if ICtype2 == 3:
+        tmax2 = travelDist / a
+    else:
+        tmax2 = Ncycle * ((xb - xa) / np.abs(a))
 
     # Initial conditions plot
-    quick_plot(x, u, xlims, ylims)
+    # quick_plot(x, u, xlims, ylims)
 
     print("[1]Upwind, [2]LW, [3]Fromm, [4]BW")
     print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
     print("[9]LF")
 
     methodType = 1  # int(input("Method type [1-9] = "))
-    runAndPlot(u, a, dt, dx, tmax, methodType)
+    runAndPlot(
+        x, u1, u2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
+    )
 
     # while t < tmax:
 
