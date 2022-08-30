@@ -89,6 +89,10 @@ if __name__ == "__main__":
     applyBC(u1, ibeg, iend, ngc, BCtype)
     applyBC(u2, ibeg, iend, ngc, BCtype)
 
+    # Make a reference u0
+    u10 = u1.copy()
+    u20 = u2.copy()
+
     # Setup a uInit for later plotting
     if ICtype1 == 3:
         travelDist = 0.3
@@ -144,7 +148,12 @@ if __name__ == "__main__":
 
     methodType = 1  # int(input("Method type [1-9] = "))
     runAndPlot(
-        x, u1, u2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
+        x, u1.copy(), u2.copy(), uInit1, uInit2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
+    )
+
+    methodType = 2  # int(input("Method type [1-9] = "))
+    runAndPlot(
+        x, u1.copy(), u2.copy(), uInit1, uInit2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
     )
 
     # while t < tmax:

@@ -23,29 +23,58 @@ def evaluate(u, a, dt, dx, tmax, ibeg, iend, ngc, N, methodType, BCtype):
 
             for i in range(ibeg, (iend + 1)):
                 uNew[i] = u[i] - ((dt / dx) * (Flux[i + 1] - Flux[i]))
+        if methodType == 2:
+            for i in range(ibeg, (iend + 1)):
+                uNew[i] = 0.5 * (u[i + 1] + u[i - 1]) - ((a/2) * (dt/dx) * (u[i + 1] - u[i - 1]))
+
 
         # Apply Boundary Conditions in place
         applyBC(uNew, ibeg, iend, ngc, BCtype)
 
         # Set new to old
-        u = uNew.copy()
+        u[:] = uNew.copy()[:]
 
         # Increment time
         t += dt
 
 
-def double_plot(x, y1, y2):
-    fig, axs = plt.subplots(2,1)
+def double_plot(x, y1, y2, reference1, reference2):
+    fig, axs = plt.subplots(2, 1)
 
-    axs[0].plot(x, y1)
-    axs[1].plot(x, y2)
+    axs[0].plot(
+        x,
+        y1,
+        linewidth = 1,
+        color="slateblue",
+        marker="o",
+        ms=5,
+        markerfacecolor="None",
+        markeredgecolor="red",
+        markeredgewidth=1,
+    )
+
+    axs[0].plot(x, reference1, color = "black")
+
+    axs[1].plot(
+        x,
+        y2,
+        linewidth = 1,
+        color="slateblue",
+        marker="o",
+        ms=3,
+        markerfacecolor="None",
+        markeredgecolor="red",
+        markeredgewidth=1,
+    )
+
+    axs[1].plot(x, reference2, color = "black")
 
     plt.show()
 
 
 def runAndPlot(
-    x, u1, u2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
+    x, u1, u2, reference1, reference2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
 ):
     evaluate(u1, a, dt, dx, tmax1, ibeg, iend, ngc, N, methodType, BCtype)
     evaluate(u2, a, dt, dx, tmax2, ibeg, iend, ngc, N, methodType, BCtype)
-    double_plot(x, u1, u2)
+    double_plot(x, u1, u2, reference1, reference2)
