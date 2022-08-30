@@ -43,9 +43,9 @@ def evaluate(u, a, dt, dx, tmax, methodType):
                 Flux[i] = FluxEval(
                     u[i - 2], u[i - 1], u[i], u[i + 1], a, dt, dx, methodType
                 )
-            
+
             for i in range(ibeg, (iend + 1)):
-                uNew[i] = u[i] - ((dt/dx) * (Flux[i + 1] - Flux[i]))
+                uNew[i] = u[i] - ((dt / dx) * (Flux[i + 1] - Flux[i]))
 
         # Apply Boundary Conditions in place
         applyBC(uNew, ibeg, iend, ngc, BCtype)
@@ -53,7 +53,7 @@ def evaluate(u, a, dt, dx, tmax, methodType):
         # Set new to old
         u = uNew.copy()
 
-        quick_plot(x, u, xlims, ylims) 
+        quick_plot(x, u, xlims, ylims)
 
         # Increment time
         t += dt
@@ -158,10 +158,8 @@ if __name__ == "__main__":
     print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
     print("[9]LF")
 
-    methodType = 1 #int(input("Method type [1-9] = "))
+    methodType = 1  # int(input("Method type [1-9] = "))
     runAndPlot(u, a, dt, dx, tmax, methodType)
-
-
 
     # while t < tmax:
 
