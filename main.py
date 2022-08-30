@@ -6,32 +6,6 @@ from applyBC import *
 from FluxEval import *
 from runAndPlot import *
 
-
-def quick_plot(x, y, xlims, ylims, title="placeholder", show=True, save=False):
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    ax.set_xlim(xlims)
-    ax.set_ylim(ylims)
-    ax.grid(alpha=0.33)
-    ax.set_title(title)
-
-    ax.plot(
-        x,
-        y,
-        color="slateblue",
-        marker="o",
-        ms=5,
-        markerfacecolor="None",
-        markeredgecolor="lime",
-        markeredgewidth=1,
-    )
-
-    if save:
-        fig.save(f"{title}.png")
-    if show:
-        plt.show()
-
-
 if __name__ == "__main__":
 
     # Get number of steps in space from user
@@ -146,61 +120,23 @@ if __name__ == "__main__":
     print("[5]minmod, [6]superbee, [7]MC, [8]VanLeer")
     print("[9]LF")
 
-    methodType = 1  # int(input("Method type [1-9] = "))
-    runAndPlot(
-        x, u1.copy(), u2.copy(), uInit1, uInit2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
-    )
-
-    methodType = 2  # int(input("Method type [1-9] = "))
-    runAndPlot(
-        x, u1.copy(), u2.copy(), uInit1, uInit2, a, dt, dx, tmax1, tmax2, ibeg, iend, ngc, N, methodType, BCtype
-    )
-
-    # while t < tmax:
-
-    #     # Calculate flux
-    #     #for i in range(ibeg, (iend + 2)):
-    #         #Flux[i] = FluxEval(u[i-2], u[i-1], u[i], u[i+1], a, dt, dx, methodType)
-
-    #     # Calculate uNew
-    #     for i in range(ibeg, (iend + 1)):
-    #         if (methodType == 1):
-    #             # Upwind
-    #             uNew[i] = u[i] - ((dt/dx) * (Flux[i + 1] - Flux[i]))
-    #         elif (methodType == 2):
-    #             # LW
-    #             uNew[i] = u[i] - (a/2)*(dt/dx)*(u[i + 1] - u[i - 1]) + (1/2)*(a*dt/dx)**2*(u[i + 1] - 2*u[i] + u[i - 1])
-    #         elif (methodType == 9):
-    #             # LF
-    #             uNew[i] = 0.5 * (u[i + 1] + u[i - 1]) - ((a/2) * (dt/dx) * (u[i + 1] - u[i - 1]))
-    #         elif (methodType == 4):
-    #             # BW
-    #             uNew[i] = u[i] - (a/2)*(dt/dx)*(3*u[i] - 4*u[i-1] + u[i-2]) + (1/2)*(a*dt/dx)**2*(u[i] - 2*u[i-1] + u[i-2])
-    #         elif (methodType == 3):
-    #             # Fromm
-    #             uNew[i] = u[i] - a * (dt/dx)*(u[i] - u[i - 1]) - (a/4)*(dt/dx)*(1 - a*(dt/dx))*(u[i+1] - u[i]) + (a/4)*(dt/dx)*(1 - a*(dt/dx))*(u[i-1] - u[i-2])
-
-    #     # Apply Boundary Conditions in place
-    #     applyBC(uNew, ibeg, iend, ngc, BCtype)
-
-    #     # Set new to old
-    #     u = uNew.copy()
-
-    #     # Increment time
-    #     t += dt
-
-    #     quick_plot(x, u, xlims, ylims)
-
-    # fig, ax = plt.subplots(figsize = (12, 6))
-
-    # ax.set_xlim(xlims)
-    # ax.set_ylim(ylims)
-    # ax.grid(alpha=0.33)
-    # ax.set_title("placeholder")
-
-    # ax.plot(x, u, color ='slateblue',marker='o', ms = 5, markerfacecolor = "None",
-    #         markeredgecolor="lime", markeredgewidth=1,)
-
-    # ax.plot(x,uInit, color = "red")
-
-    # plt.show()
+    for i in range(1, 6):
+        methodType = i  # int(input("Method type [1-9] = "))
+        runAndPlot(
+            x,
+            u1.copy(),
+            u2.copy(),
+            uInit1,
+            uInit2,
+            a,
+            dt,
+            dx,
+            tmax1,
+            tmax2,
+            ibeg,
+            iend,
+            ngc,
+            N,
+            methodType,
+            BCtype,
+        )
