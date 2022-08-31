@@ -8,5 +8,5 @@ def applyBC(u, ibeg, iend, ngc, BCtype):
         u[iend + 2] = u[ibeg + 1]
     elif BCtype == 2:
         # Outflow bounddary conditions
-        u[1:ngc] = u[ibeg]
-        u[(iend + 1) : (iend + ngc)] = u[iend]
+        u[0:ngc] = u[ibeg]
+        u[(iend + 1) : (iend + ngc + 1)] = u[iend]

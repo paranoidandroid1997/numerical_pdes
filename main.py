@@ -58,11 +58,12 @@ if __name__ == "__main__":
     ylims = (np.min(u1) * 1.5, np.max(u2) * 1.5)
 
     # Get type of boundary condition from the user
-    BCtype = 1  # int(input("BC type [1:periodic, 2:outflow] = "))
+    BCtype1 = 1  # int(input("BC type 1 [1:periodic, 2:outflow] = "))
+    BCtype2 = 2  # int(input("BC type 2 [1:periodic, 2:outflow] = "))
 
     # Apply boundary conditions in place
-    applyBC(u1, ibeg, iend, ngc, BCtype)
-    applyBC(u2, ibeg, iend, ngc, BCtype)
+    applyBC(u1, ibeg, iend, ngc, BCtype1)
+    applyBC(u2, ibeg, iend, ngc, BCtype2)
 
     # Make a reference u0
     u10 = u1.copy()
@@ -76,7 +77,7 @@ if __name__ == "__main__":
                 uInit1[i] = 1
             elif x[i] > ((0.5 + travelDist) * (xb - xa)):
                 uInit1[i] = -1
-        applyBC(uInit1, ibeg, iend, ngc, BCtype)
+        applyBC(uInit1, ibeg, iend, ngc, BCtype1)
     else:
         uInit1 = u1.copy()
 
@@ -88,7 +89,7 @@ if __name__ == "__main__":
                 uInit2[i] = 1
             elif x[i] > ((0.5 + travelDist) * (xb - xa)):
                 uInit2[i] = -1
-        applyBC(uInit2, ibeg, iend, ngc, BCtype)
+        applyBC(uInit2, ibeg, iend, ngc, BCtype2)
     else:
         uInit2 = u2.copy()
 
@@ -133,5 +134,6 @@ if __name__ == "__main__":
             ngc,
             N,
             methodType,
-            BCtype,
+            BCtype1,
+            BCtype2,
         )

@@ -121,9 +121,10 @@ def runAndDoublePlot(
     ngc,
     N,
     methodType,
-    BCtype,
+    BCtype1,
+    BCtype2
 ):
     methods = ["Upwind", "LF", "LW", "BW", "Fromm"]
-    evaluate(u1, a, dt, dx, tmax1, ibeg, iend, ngc, N, methodType, BCtype)
-    evaluate(u2, a, dt, dx, tmax2, ibeg, iend, ngc, N, methodType, BCtype)
+    evaluate(u1, a, dt, dx, tmax1, ibeg, iend, ngc, N, methodType, BCtype1)
+    evaluate(u2, a, dt, dx, tmax2, ibeg, iend, ngc, N, methodType, BCtype2)
     doublePlot(x, u1, u2, reference1, reference2, methods[methodType - 1], save=True)
