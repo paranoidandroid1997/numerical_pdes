@@ -79,7 +79,7 @@ if __name__ == "__main__":
     plt.plot(x[ibeg:(iend + 1)], u[ibeg:(iend+1)])
     plt.show()
 
-    methodType = 1#input("[1] Conservative Up, [2] Nonconservative Up")
+    methodType = 2#input("[1] Conservative Up, [2] Nonconservative Up")
 
     # Set up uNew for numerical PDE computation
     uNew = np.zeros(N + (2 * ngc))
@@ -101,9 +101,12 @@ if __name__ == "__main__":
             for i in range(ibeg, iend+1):
                 uNew[i] = u[i] - dt/dx*(flux[i+1] - flux[i])
         elif (methodType == 2):
-            print("not done yet")
+            for i in range(ibeg, iend+1):
+                uNew[i] = u[i] - u[i]*dt/dx*(u[i]-u[i-1])
 
         applyBC(uNew, ibeg, iend, ngc, BCtype)
+
+        # What is up with this line
         #dt = cfl * dx/abs(np.max(u))
         t += dt
         print(t)
@@ -112,9 +115,3 @@ if __name__ == "__main__":
 
         plt.plot(x[ibeg:(iend+1)], u[ibeg:(iend+1)])
         plt.show()
-
-
-
-
-
-
