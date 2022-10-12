@@ -6,14 +6,14 @@ from applyBC import *
 if __name__ == "__main__":
 
     # Set grid resolution
-    N = 64 #input("Grid resolution N = ")
+    N = 64  # input("Grid resolution N = ")
 
     # Set x bounds
     xa = 0
     xb = 1
 
     # Set change x
-    dx = (xb - xa)/N
+    dx = (xb - xa) / N
 
     # Set boundaries
     ngc = 2
@@ -25,8 +25,8 @@ if __name__ == "__main__":
     uR = 2
 
     # Intialize x array
-    x = np.zeros(N + (2*ngc))
-    x[ibeg:(iend + 1)] = np.linspace(xa + 0.5*dx, xb - 0.5*dx, N)
+    x = np.zeros(N + (2 * ngc))
+    x[ibeg : (iend + 1)] = np.linspace(xa + 0.5 * dx, xb - 0.5 * dx, N)
 
     # Initialize boundaries of x
     for i in range(0, ngc):
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     uInit = np.zeros(N + (2 * ngc))
 
     # Initialize flux
-    flux = np.zeros(N + (2*ngc) + 1)
+    flux = np.zeros(N + (2 * ngc) + 1)
 
     # IC setup
     shockLoc = 0.5
@@ -46,15 +46,15 @@ if __name__ == "__main__":
 
     # Setup square wave
     for i in range(ibeg, iend + 1):
-        if (x[i] > xa and x[i] < shockLoc*(xb-xa)):
+        if x[i] > xa and x[i] < shockLoc * (xb - xa):
             u[i] = uL
-        elif (x[i] > shockLoc*(xb-xa)):
+        elif x[i] > shockLoc * (xb - xa):
             u[i] = uR
 
     for i in range(ibeg, iend):
-        if ((x[i] > xa and x[i] <= (shockLoc+travelDist)*(xb-xa))):
+        if x[i] > xa and x[i] <= (shockLoc + travelDist) * (xb - xa):
             uInit[i] = uL
-        elif (x[i] > (shockLoc + travelDist) * (xb - xa)):
+        elif x[i] > (shockLoc + travelDist) * (xb - xa):
             uInit[i] = uR
 
     # Get boundary condition type
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     applyBC(uInit, ibeg, iend, ngc, BCtype)
 
     # Set cfl condition
-    cfl = 0.9 #input("Cfl = ")
+    cfl = 0.9  # input("Cfl = ")
 
     # Set timestep
 
@@ -73,45 +73,46 @@ if __name__ == "__main__":
     Ncycle = 1
     t = 0
 
-    tmax = 1#input("tmax=")
+    tmax = 1  # input("tmax=")
 
     # Plot the initial state of u
-    plt.plot(x[ibeg:(iend + 1)], u[ibeg:(iend+1)])
+    plt.plot(x[ibeg : (iend + 1)], u[ibeg : (iend + 1)])
     plt.show()
 
-    methodType = 2#input("[1] Conservative Up, [2] Nonconservative Up")
+    methodType = 1  # input("[1] Conservative Up, [2] Nonconservative Up")
 
     # Set up uNew for numerical PDE computation
     uNew = np.zeros(N + (2 * ngc))
 
     while t < tmax:
-        if (methodType == 1):
-            for i in range(ibeg, iend+2):
+        if methodType == 1:
+            for i in range(ibeg, iend + 2):
                 # Compute shock speed for Burgers' eqn
                 s = 0.5 * (u[i] + u[i - 1])
 
                 # Upwind Flux
-                if ((s < 0) and (u[i] < 0)):
-                    flux[i] = 0.5*u[i]**2
-                elif ((s > 0) and (u[i - 1] > 0)):
-                    flux[i] = 0.5*u[i-1]**2
-                elif ((u[i - 1] < 0) and (u[i] > 0)):
+                if (s < 0) and (u[i] < 0):
+                    flux[i] = 0.5 * u[i] ** 2
+                elif (s > 0) and (u[i - 1] > 0):
+                    flux[i] = 0.5 * u[i - 1] ** 2
+                elif (u[i - 1] < 0) and (u[i] > 0):
                     flux[i] = 0
 
-            for i in range(ibeg, iend+1):
-                uNew[i] = u[i] - dt/dx*(flux[i+1] - flux[i])
-        elif (methodType == 2):
-            for i in range(ibeg, iend+1):
-                uNew[i] = u[i] - u[i]*dt/dx*(u[i]-u[i-1])
+            for i in range(ibeg, iend + 1):
+                uNew[i] = u[i] - dt / dx * (flux[i + 1] - flux[i])
+        elif methodType == 2:
+            for i in range(ibeg, iend + 1):
+                # Where is this formula coming from
+                uNew[i] = u[i] - u[i] * dt / dx * (u[i] - u[i - 1])
 
         applyBC(uNew, ibeg, iend, ngc, BCtype)
 
-        # What is up with this line
-        #dt = cfl * dx/abs(np.max(u))
+        # What is up with this line?
+        # dt = cfl * dx/abs(np.max(u))
         t += dt
         print(t)
 
         u = uNew.copy()
 
-        plt.plot(x[ibeg:(iend+1)], u[ibeg:(iend+1)])
+        plt.plot(x[ibeg : (iend + 1)], u[ibeg : (iend + 1)])
         plt.show()
